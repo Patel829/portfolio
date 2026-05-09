@@ -1,7 +1,8 @@
-require('dotenv').config(); // Yeh line .env file se data read karegi
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,6 +10,14 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// 1. Frontend serve karne ka logic (Ye index.html ko browser me dikhayega)
+app.use(express.static(path.join(__dirname, './')));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// 2. Email bhejne ka API route
 app.post('/api/contact', async (req, res) => {
     const { name, email, message } = req.body;
 
@@ -17,13 +26,12 @@ app.post('/api/contact', async (req, res) => {
     }
 
     try {
-       const transporter = nodemailer.createTransport({
+        const transporter = nodemailer.createTransport({
             service: 'gmail',
-          
-auth: {
-    user: process.env.EMAIL_USER, 
-    pass: process.env.EMAIL_PASS  
-}
+            auth: {
+                user: process.env.EMAIL_USER, 
+                pass: process.env.EMAIL_PASS  
+            }
         });
 
         const mailOptions = {
@@ -43,6 +51,7 @@ auth: {
     }
 });
 
+// 3. Server Start
 app.listen(PORT, () => {
-    console.log(`Backend server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
